@@ -1,6 +1,6 @@
 # src/repositories/setting_repo.py
 
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Tuple, Any, Optional, List, Union
 from dataclasses import asdict
 from src.my_constants import DB_TABLES
 from src.repositories._base_repo import BaseRepository
@@ -109,10 +109,39 @@ class Setting_Repo(BaseRepository):
             return None
         else:
             return setting.value
-
+    def get_all_for_export(self) -> List[Dict[str, Any]]:
+        sql = f"SELECT * FROM {SETTING_TABLE}"
+        return self.get_all(sql=sql)
     def get_all_settings(self) -> List[Setting_Type]:
         """Retrieves all setting records from the table."""
         sql = f"SELECT * FROM {SETTING_TABLE}"
         results_list = self.get_all(sql=sql)
 
         return [self._dict_to_setting(data) for data in results_list]
+
+    def insert_bulk_products(self, product_list: List[PropertyTemplate_Type]) -> bool:
+        """Inserts multiple PropertyProduct_Type records in a single transaction."""
+        if not product_list:
+            return True
+
+        params_list = []
+        for product in product_list:
+            product.id = self.init_id()
+            product.created_at = self.init_time()
+            product.updated_at = product.created_at
+            params_list.append(asdict(product))
+
+        sql = f"""
+        INSERT INTO {SETTING_TABLE} (
+            id, name, value, is_selected, created_at, updated_at
+        ) VALUES (
+            :id, :name, :value, :is_selected, :created_at, :updated_at
+        )
+        """
+
+        def execute_bulk_insert() -> Tuple[bool, Any]:
+            success = self.execute_many(sql=sql, params_list=params_list)
+            return success, None
+
+        success, _ = self.execute_in_transaction(execute_bulk_insert)
+        return success

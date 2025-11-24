@@ -87,10 +87,39 @@ class PropertyTemplate_Repo(BaseRepository):
         if result_dict:
             return self._dict_to_property_template(result_dict)
         return None
-
+    def get_all_for_export(self) -> List[Dict[str, Any]]:
+        sql = f"SELECT * FROM {PROPERTY_TEMPLATE_TABLE}"
+        return self.get_all(sql=sql)
     def get_all_templates(self) -> List[PropertyTemplate_Type]:
         """Retrieves all property template records from the table."""
         sql = f"SELECT * FROM {PROPERTY_TEMPLATE_TABLE}"
         results_list = self.get_all(sql=sql)
 
         return [self._dict_to_property_template(data) for data in results_list]
+
+    def insert_bulk_products(self, product_list: List[PropertyTemplate_Type]) -> bool:
+        """Inserts multiple PropertyProduct_Type records in a single transaction."""
+        if not product_list:
+            return True
+
+        params_list = []
+        for product in product_list:
+            product.id = self.init_id()
+            product.created_at = self.init_time()
+            product.updated_at = product.created_at
+            params_list.append(asdict(product))
+
+        sql = f"""
+        INSERT INTO {PROPERTY_TEMPLATE_TABLE} (
+            id, transaction_type, name, category, value, is_default, created_at, updated_at
+        ) VALUES (
+            :id, :transaction_type, :name, :category, :value, :is_default, :created_at, :updated_at
+        )
+        """
+
+        def execute_bulk_insert() -> Tuple[bool, Any]:
+            success = self.execute_many(sql=sql, params_list=params_list)
+            return success, None
+
+        success, _ = self.execute_in_transaction(execute_bulk_insert)
+        return success

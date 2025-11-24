@@ -4,14 +4,14 @@ from typing import Dict, Any, Optional, List, Callable, Tuple
 from datetime import datetime
 import uuid
 
-from src.utils.logger import LoggerSingleton
+from src.utils.logger import Logger
 
 
 class BaseRepository:
 
     def __init__(self, db: QSqlDatabase):
         self.db = db
-        self.logger = LoggerSingleton(self.__class__.__name__)
+        self.logger = Logger(self.__class__.__name__)
 
     # --- Utility Methods ---
 

@@ -99,7 +99,7 @@ class Profile_Repo(BaseRepository):
             return self._dict_to_profile(result_dict)
         return None
 
-    def get_all_profile(self) -> List[Profile_Type]:
+    def get_all_profiles(self) -> List[Profile_Type]:
         """Retrieves all profile records from the table."""
         sql = f"SELECT * FROM {PROFILE_TABLE}"
         results_list = self.get_all(sql=sql)

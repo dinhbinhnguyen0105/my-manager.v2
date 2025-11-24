@@ -73,7 +73,17 @@ class PropertyProduct_Repo(BaseRepository):
         """
         params = asdict(product_payload)
         return self.update(sql=sql, params=params)
-
+    def refresh_updated_at(self, product_id: str) -> bool:
+        """Refreshes the 'updated_at' timestamp for a property product record."""
+        current_time = self.init_time()
+        sql = f"""
+        UPDATE {PROPERTY_PRODUCT_TABLE} SET
+            updated_at = :updated_at
+        WHERE id = :id
+        """
+        params = {"id": product_id, "updated_at": current_time}
+        return self.update(sql=sql, params=params)
+    
     def delete_product_by_id(self, product_id: str) -> bool:
         """Deletes a property product record by its primary key ID."""
         sql = f"DELETE FROM {PROPERTY_PRODUCT_TABLE} WHERE id = :id"
@@ -108,7 +118,9 @@ class PropertyProduct_Repo(BaseRepository):
         results_list = self.get_all(sql=sql)
 
         return [self._dict_to_property_product(data) for data in results_list]
-
+    def get_all_for_export(self) -> List[Dict[str, Any]]:
+        sql = f"SELECT * FROM {PROPERTY_PRODUCT_TABLE}"
+        return self.get_all(sql=sql)
     def insert_bulk_products(self, product_list: List[PropertyProduct_Type]) -> bool:
         """Inserts multiple PropertyProduct_Type records in a single transaction."""
         if not product_list:
