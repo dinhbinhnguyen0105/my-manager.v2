@@ -6,9 +6,7 @@ from dataclasses import asdict
 
 from src.my_types import PropertyProduct_Type
 from src.services._base_service import BaseService
-from src.my_constants import SETTING_NAME_OPTIONS
-# Gỉa định có các hàm tiện ích xử lý hình ảnh
-from utils.image_handlers import (
+from src.utils.image_handlers import (
     copy_source_images,
     insert_logo_to_images,
     remove_images,
@@ -16,14 +14,21 @@ from utils.image_handlers import (
 )
 
 
-IMAGE_CONTAINER_DIR = SETTING_NAME_OPTIONS["image_container_dir"]
-LOGO_FILE = SETTING_NAME_OPTIONS["logo_file"]
+IMAGE_CONTAINER_DIR = "image_container_dir"
+LOGO_FILE = "logo_file"
 
 
 class PropertyProduct_Service(BaseService):
     """
     Service layer for PropertyProduct, handling business logic and image file system coordination.
     """
+
+    def _dict_to_data_type(self, data: Dict[str, Any]) -> PropertyProduct_Type:
+        """Converts a database dictionary record into a PropertyProduct_Type dataclass."""
+        required_keys = [
+            field.name for field in PropertyProduct_Type.__dataclass_fields__.values()
+        ]
+        return PropertyProduct_Type(**{key: data.get(key) for key in required_keys})
 
     def create(
         self, product_payload: PropertyProduct_Type, image_paths: List[str]
@@ -75,6 +80,15 @@ class PropertyProduct_Service(BaseService):
             return True
         self.logger.error(f"Failed to update property product: {product_payload.id}")
         return False
+    
+    def change_status(self, id: str, status: str):
+        is_updated = self.repo_manager.property_product_repo.change_status(id, status)
+        if is_updated:
+            self.logger.info(f"Property product updated successfully: {id}")
+            return True
+        self.logger.error(f"Failed to update property product: {id}")
+        return False
+    
     def refresh(self, product_id: str) -> bool:
         """Refreshes the 'updated_at' timestamp for a property product record."""
         is_refreshed = self.repo_manager.property_product_repo.refresh_updated_at(
@@ -112,7 +126,7 @@ class PropertyProduct_Service(BaseService):
             self.logger.error(f"Failed to delete property product from DB: {product_id}")
             return False
 
-    def read(self, product_id: str) -> Optional[PropertyProduct_Type]:
+    def read(self, product_id: str) -> Optional[Dict[str, Any]]:
         """
         Retrieves a single property product record by ID.
         """
@@ -129,7 +143,7 @@ class PropertyProduct_Service(BaseService):
             "image_paths": current_product_imgs
         }
 
-    def read_all(self) -> List[PropertyProduct_Type]:
+    def read_all(self) -> List[Dict[str, Any]]:
         """
         Retrieves all property product records.
         """
@@ -147,22 +161,36 @@ class PropertyProduct_Service(BaseService):
 
         return results
 
+    def get_random(self, transaction, days) -> Optional[Dict[str, Any]]:
+        current_product = self.repo_manager.property_product_repo.get_random_product_by_transaction_and_update_days(transaction, days)
+        if not current_product:
+            self.logger.warning(f"Không tìm thấy product phù hợp với transaction = {transaction}, days = {days}")
+            return None
+        image_container = self.repo_manager.setting_repo.get_setting_value_by_name(IMAGE_CONTAINER_DIR)
+        current_image_dir = os.path.join(image_container, str(current_product.id))
+        current_image_logo_dir = os.path.join(current_image_dir, f"{str(current_product.id)}_logo")
+        current_product_imgs = get_images(current_image_logo_dir)
+        return {
+            "info": current_product,
+            "image_paths": current_product_imgs
+        }
+    
     def read_all_for_export(self) -> List[Dict[str, Any]]:
         """
         Retrieves all property product records in dictionary format for export/display.
         """
         return self.repo_manager.property_product_repo.get_all_for_export()
     
-    def create_bulk(self, product_list: List[PropertyProduct_Type]) -> bool:
+    def create_bulk(self, payload: List[PropertyProduct_Type]) -> bool:
         """
         Inserts multiple PropertyProduct_Type records in a single database transaction.
         """
-        if not product_list:
+        if not payload:
             return True
         
-        success = self.repo_manager.property_product_repo.insert_bulk_products(product_list)
+        success = self.repo_manager.property_product_repo.insert_bulk(payload)
         if success:
-            self.logger.info(f"Successfully inserted {len(product_list)} property products in bulk.")
+            self.logger.info(f"Successfully inserted {len(payload)} property products in bulk.")
         else:
             self.logger.error(f"Failed to insert property products in bulk. Transaction rolled back.")
         return success

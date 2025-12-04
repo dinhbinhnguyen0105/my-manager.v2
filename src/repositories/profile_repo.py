@@ -6,9 +6,7 @@ from src.my_constants import DB_TABLES
 from src.repositories._base_repo import BaseRepository
 from src.my_types import Profile_Type
 
-
 PROFILE_TABLE = DB_TABLES["profile"]
-
 
 class Profile_Repo(BaseRepository):
     """
@@ -36,7 +34,7 @@ class Profile_Repo(BaseRepository):
             :id, :mobile_ua, :desktop_ua, :uid, :status, :username, :password, :two_fa, :email, :email_password, :phone_number, :profile_note, :profile_type, :profile_group, :profile_name, :created_at, :updated_at
         )
         """
-        if self.insert(sql=sql, params=asdict(profile_payload)):
+        if super().insert(sql=sql, params=asdict(profile_payload)):
             return profile_payload
         return False
 
@@ -69,22 +67,36 @@ class Profile_Repo(BaseRepository):
         """
         # Ensure only updatable fields and the ID are in the params
         params = asdict(profile_payload)
+        return super().update(sql=sql, params=params)
+    
+    def change_status(self, id: str, status: str) -> bool:
+        sql = f"""
+        UPDATE {PROFILE_TABLE} SET
+            status = :status,
+            updated_at = :updated_at
+        WHERE id = :id
+        """
+        params = {
+            "id": id,
+            "status": status, 
+            "updated_at": self.init_time(),
+        }
         return self.update(sql=sql, params=params)
 
     def delete_profile_by_id(self, profile_id: str) -> bool:
         """Deletes a profile record by its primary key ID."""
         sql = f"DELETE FROM {PROFILE_TABLE} WHERE id = :id"
-        return self.delete(sql=sql, params={"id": profile_id})
+        return super().delete(sql=sql, params={"id": profile_id})
 
     def delete_profile_by_uid(self, profile_uid: str) -> bool:
         """Deletes a profile record by its unique identifier (uid)."""
         sql = f"DELETE FROM {PROFILE_TABLE} WHERE uid = :uid"
-        return self.delete(sql=sql, params={"uid": profile_uid})
+        return super().delete(sql=sql, params={"uid": profile_uid})
 
     def get_profile_by_id(self, profile_id: str) -> Optional[Profile_Type]:
         """Retrieves a single profile record by its primary key ID."""
         sql = f"SELECT * FROM {PROFILE_TABLE} WHERE id = :id"
-        result_dict = self.get_one(sql=sql, params={"id": profile_id})
+        result_dict = super().get_one(sql=sql, params={"id": profile_id})
 
         if result_dict:
             return self._dict_to_profile(result_dict)
@@ -93,7 +105,7 @@ class Profile_Repo(BaseRepository):
     def get_profile_by_uid(self, profile_uid: str) -> Optional[Profile_Type]:
         """Retrieves a single profile record by its unique identifier (uid)."""
         sql = f"SELECT * FROM {PROFILE_TABLE} WHERE uid = :uid"
-        result_dict = self.get_one(sql=sql, params={"uid": profile_uid})
+        result_dict = super().get_one(sql=sql, params={"uid": profile_uid})
 
         if result_dict:
             return self._dict_to_profile(result_dict)
@@ -102,26 +114,26 @@ class Profile_Repo(BaseRepository):
     def get_all_profiles(self) -> List[Profile_Type]:
         """Retrieves all profile records from the table."""
         sql = f"SELECT * FROM {PROFILE_TABLE}"
-        results_list = self.get_all(sql=sql)
+        results_list = super().get_all(sql=sql)
 
         return [self._dict_to_profile(data) for data in results_list]
 
     def get_all_for_export(self) -> List[Dict[str, Any]]:
         """Retrieves all profile records as a list of dictionaries, suitable for export."""
         sql = f"SELECT * FROM {PROFILE_TABLE}"
-        return self.get_all(sql=sql)
+        return super().get_all(sql=sql)
 
-    def insert_bulk_profiles(self, profile_list: List[Profile_Type]) -> bool:
+    def insert_bulk(self, payload: List[Any]) -> bool:
         """
         Inserts multiple Profile_Type records in a single transaction.
         Returns True on full success, False otherwise (with rollback).
         """
-        if not profile_list:
+        if not payload:
             return True
 
         # 1. Prepare data and SQL outside the transaction callback
         params_list = []
-        for profile in profile_list:
+        for profile in payload:
             profile.id = self.init_id()
             profile.created_at = self.init_time()
             profile.updated_at = profile.created_at
@@ -136,11 +148,13 @@ class Profile_Repo(BaseRepository):
         """
 
         # 2. Define the callback for transaction execution
+        repo_super = super(Profile_Repo, self)
+
         def execute_bulk_insert() -> Tuple[bool, Any]:
             # execute_many handles the preparation and execution loop for each set of params
-            success = self.execute_many(sql=sql, params_list=params_list)
+            success = repo_super.execute_many(sql=sql, params_list=params_list)
             return success, None
 
         # 3. Execute the operation within a transaction
-        success, _ = self.execute_in_transaction(execute_bulk_insert)
+        success, _ = repo_super.execute_in_transaction(execute_bulk_insert)
         return success

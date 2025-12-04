@@ -1,20 +1,19 @@
 # src/controllers/property_template_controller.py
 
 from typing import Dict, Any, Union, Optional, List, Tuple
-from src.utils.logger import Logger
+from src.controllers._base_controller import BaseController
 from src.services._service_manager import Service_Manager
 from src.my_types import PropertyTemplate_Type
 from dataclasses import asdict
-
+from src.utils.exception_handler import log_exception
 
 class InvalidInputError(Exception): pass
 class TemplateNotFoundError(Exception): pass
 
 
-class PropertyTemplate_Controller:
-    def __init__(self, service_manager: Service_Manager):
-        self.template_service = service_manager.property_template_service
-        self.logger = Logger(self.__class__.__name__)
+class PropertyTemplate_Controller(BaseController):
+    def __init__(self, service_manager:Service_Manager):
+        super().__init__(service_manager)
 
     def create(self, request_data: Dict[str, Any]) -> Union[PropertyTemplate_Type, Tuple[bool, str]]:
         try:
@@ -32,7 +31,7 @@ class PropertyTemplate_Controller:
                 is_default=request_data.get("is_default", False),
             )
             
-            new_template = self.template_service.create(payload)
+            new_template = self.service_manager.property_template_service.create(payload)
             
             if isinstance(new_template, PropertyTemplate_Type):
                 return new_template 
@@ -44,7 +43,7 @@ class PropertyTemplate_Controller:
             return False, str(e)
         except Exception as e:
             error_msg = f"Unexpected error in create: {e}"
-            self.logger.error(error_msg)
+            log_exception(e)
             return False, error_msg
 
     def read(self, template_id: str) -> Union[PropertyTemplate_Type, Tuple[bool, str]]:
@@ -52,7 +51,7 @@ class PropertyTemplate_Controller:
             if not template_id:
                 raise InvalidInputError("Template ID is required.")
                 
-            template = self.template_service.read(template_id)
+            template = self.service_manager.property_template_service.read(template_id)
             
             if isinstance(template, PropertyTemplate_Type):
                 return template
@@ -65,7 +64,7 @@ class PropertyTemplate_Controller:
             return False, str(e)
         except Exception as e:
             error_msg = f"Unexpected error in read: {e}"
-            self.logger.error(error_msg)
+            log_exception(e)
             return False, error_msg
 
     def update(self, template_id: str, update_data: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
@@ -75,7 +74,7 @@ class PropertyTemplate_Controller:
             if not update_data:
                 raise InvalidInputError("Update data cannot be empty.")
 
-            current_template = self.template_service.read(template_id)
+            current_template = self.service_manager.property_template_service.read(template_id)
             if not isinstance(current_template, PropertyTemplate_Type):
                 raise TemplateNotFoundError(f"Template with ID '{template_id}' not found for update.")
 
@@ -84,7 +83,7 @@ class PropertyTemplate_Controller:
             
             updated_payload = PropertyTemplate_Type(**template_dict)
 
-            is_updated = self.template_service.update(updated_payload)
+            is_updated = self.service_manager.property_template_service.update(updated_payload)
 
             if is_updated:
                 return True, None
@@ -99,15 +98,31 @@ class PropertyTemplate_Controller:
             return False, str(e)
         except Exception as e:
             error_msg = f"Unexpected error in update: {e}"
-            self.logger.error(error_msg)
+            log_exception(e)
             return False, error_msg
 
+    def change_status(self, id: str, status: str):
+        try:
+            if not id:
+                raise InvalidInputError("Template ID is required for update.")
+            if not status:
+                raise InvalidInputError("Update data cannot be empty.")
+
+            current_product = self.service_manager.property_template_service.read(id)
+            if not isinstance(current_product, PropertyTemplate_Type):
+                raise TemplateNotFoundError(f"Template with ID '{id}' not found for update.")
+
+            return self.service_manager.property_template_service.change_status(id, status)
+        except Exception as e:
+            log_exception(e)
+            return False
+        
     def delete(self, template_id: str) -> Tuple[bool, Optional[str]]:
         try:
             if not template_id:
                 raise InvalidInputError("Template ID is required for delete.")
 
-            is_deleted = self.template_service.delete(template_id)
+            is_deleted = self.service_manager.property_template_service.delete(template_id)
             
             if is_deleted:
                 return True, None
@@ -120,8 +135,16 @@ class PropertyTemplate_Controller:
             return False, str(e)
         except Exception as e:
             error_msg = f"Unexpected error in delete: {e}"
-            self.logger.error(error_msg)
+            log_exception(e)
             return False, error_msg
 
     def read_all(self) -> List[PropertyTemplate_Type]:
-        return self.template_service.read_all()
+        return self.service_manager.property_template_service.read_all()
+    
+    def get_random(self, transaction_type: str, name: str, category: str, is_default = True) :
+        return self.service_manager.property_template_service.get_random(transaction_type, name, category, is_default)
+    
+    def import_data(self,file_path: str, data_format: str) -> Tuple[bool, Optional[str]]:
+        return super().import_data("property_template_service", file_path, data_format)
+    def export_data(self, file_path, data_format = "json"):
+        return super().export_data("property_template_service", file_path, data_format)

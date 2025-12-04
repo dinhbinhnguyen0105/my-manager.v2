@@ -8,6 +8,7 @@ from src.my_types import Setting_Type
 
 
 SETTING_TABLE = DB_TABLES["setting"]
+SETTING_PROXY_OPTION = "proxy"
 
 
 class Setting_Repo(BaseRepository):
@@ -37,7 +38,7 @@ class Setting_Repo(BaseRepository):
             :id, :name, :value, :is_selected, :created_at, :updated_at
         )
         """
-        if self.insert(sql=sql, params=asdict(setting_payload)):
+        if super().insert(sql=sql, params=asdict(setting_payload)):
             return setting_payload
         return False
 
@@ -58,7 +59,7 @@ class Setting_Repo(BaseRepository):
         WHERE id = :id
         """
         params = asdict(setting_payload)
-        return self.update(sql=sql, params=params)
+        return super().update(sql=sql, params=params)
 
     def update_setting_by_name(
         self, setting_name: str, new_value: str, new_is_selected: bool = False
@@ -78,17 +79,17 @@ class Setting_Repo(BaseRepository):
             "is_selected": new_is_selected,
             "updated_at": updated_at,
         }
-        return self.update(sql=sql, params=params)
+        return super().update(sql=sql, params=params)
 
     def delete_setting_by_id(self, setting_id: str) -> bool:
         """Deletes a setting record by its primary key ID."""
         sql = f"DELETE FROM {SETTING_TABLE} WHERE id = :id"
-        return self.delete(sql=sql, params={"id": setting_id})
+        return super().delete(sql=sql, params={"id": setting_id})
 
     def get_setting_by_id(self, setting_id: str) -> Optional[Setting_Type]:
         """Retrieves a single setting record by its primary key ID."""
         sql = f"SELECT * FROM {SETTING_TABLE} WHERE id = :id"
-        result_dict = self.get_one(sql=sql, params={"id": setting_id})
+        result_dict = super().get_one(sql=sql, params={"id": setting_id})
 
         if result_dict:
             return self._dict_to_setting(result_dict)
@@ -97,7 +98,7 @@ class Setting_Repo(BaseRepository):
     def get_setting_by_name(self, setting_name: str) -> Optional[Setting_Type]:
         """Retrieves a single setting record by its unique name."""
         sql = f"SELECT * FROM {SETTING_TABLE} WHERE name = :name"
-        result_dict = self.get_one(sql=sql, params={"name": setting_name})
+        result_dict = super().get_one(sql=sql, params={"name": setting_name})
 
         if result_dict:
             return self._dict_to_setting(result_dict)
@@ -109,23 +110,49 @@ class Setting_Repo(BaseRepository):
             return None
         else:
             return setting.value
+    
+    def get_proxies_selected(self) -> List[str]:
+        sql = f"SELECT * FROM {SETTING_TABLE} WHERE name = :name AND is_selected = :is_selected"
+        params = {
+            "name": SETTING_PROXY_OPTION,
+            "is_selected": True
+        }
+        result_list = super().get_all(sql, params)
+        for _ in result_list:
+            _.get("value")
+        return [_.get("value") for _ in result_list]
+    
+    def toggle_select(self, setting_id: str, is_selected: bool) -> bool:
+        sql = f"""
+        UPDATE {SETTING_TABLE} SET
+            is_selected = :is_selected,
+            updated_at = :updated_at
+        WHERE id = :id
+        """
+        params = {
+            "id": setting_id,
+            "is_selected": 1 if is_selected else 0, 
+            "updated_at": self.init_time(),
+        }
+        return self.update(sql=sql, params=params)
+    
     def get_all_for_export(self) -> List[Dict[str, Any]]:
         sql = f"SELECT * FROM {SETTING_TABLE}"
-        return self.get_all(sql=sql)
+        return super().get_all(sql=sql)
     def get_all_settings(self) -> List[Setting_Type]:
         """Retrieves all setting records from the table."""
         sql = f"SELECT * FROM {SETTING_TABLE}"
-        results_list = self.get_all(sql=sql)
+        results_list = super().get_all(sql=sql)
 
         return [self._dict_to_setting(data) for data in results_list]
 
-    def insert_bulk_products(self, product_list: List[PropertyTemplate_Type]) -> bool:
+    def insert_bulk(self, payload: List[Any]) -> bool:
         """Inserts multiple PropertyProduct_Type records in a single transaction."""
-        if not product_list:
+        if not payload:
             return True
 
         params_list = []
-        for product in product_list:
+        for product in payload:
             product.id = self.init_id()
             product.created_at = self.init_time()
             product.updated_at = product.created_at
@@ -139,9 +166,11 @@ class Setting_Repo(BaseRepository):
         )
         """
 
+        repo_super = super(Setting_Repo, self)
+
         def execute_bulk_insert() -> Tuple[bool, Any]:
-            success = self.execute_many(sql=sql, params_list=params_list)
+            success = repo_super.execute_many(sql=sql, params_list=params_list)
             return success, None
 
-        success, _ = self.execute_in_transaction(execute_bulk_insert)
+        success, _ = repo_super.execute_in_transaction(execute_bulk_insert)
         return success

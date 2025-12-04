@@ -8,9 +8,9 @@ DB_TABLES = {
     "setting": "SETTING",
 }
 PROFILE__NAME_OPTIONS = {
-    "real_estate": "REAL_ESTATE",
-    "tire": "TIRE",
-    "fashion": "FASHION",
+    "real_estate": "Real estate",
+    "tire": "Tire",
+    "fashion": "Fashion",
 }
 PROFILE__STATUS_OPTIONS = {
     "dead": "DEAD",
@@ -100,18 +100,28 @@ PROPERTY_TEMPLATE__NAME_OPTIONS = {
 PROPERTY_TEMPLATE__CATEGORY_OPTIONS = PROPERTY_PRODUCT__CATEGORY_OPTIONS
 
 SETTING_NAME_OPTIONS = {
-    "profile_container_dir": "PROFILE_CONTAINER_DIR",
-    "image_container_dir": "IMAGE_CONTAINER_DIR",
-    "logo_file": "LOGO_FILE",
-    "proxy": "PROXY",
+    "profile_container_dir": "user_data_dir container",
+    "image_container_dir": "image_dir container",
+    "logo_file": "logo_file",
+    "proxy": "proxy",
 }
 
+SELL__BY_MARKETPLACE = "sell__by_marketplace"
+SELL__BY_GROUP = "sell__by_group"
+DISCUSSION__TO_GROUP = "discussion__to_group"
+DISCUSSION__TO_NEW_FEED = "discussion__to_new_feed"
+SHARE__BY_MOBILE = "share__by_mobile"
+SHARE__BY_DESKTOP = "share__by_desktop"
+LAUNCH = "launch"
+TAKE_CARE__JOIN_GROUP = "take_care__join_group"
+
 ROBOT_ACTION_OPTIONS = {
-    "sell__by_marketplace": "SELL__BY_MARKETPLACE",
-    "sell__by_group": "SELL__BY_GROUP",
-    "discussion_to_group": "DISCUSSION_TO_GROUP",
-    "discussion_to_new_feed": "DISCUSSION_TO_NEW_FEED",
-    "share_listed_item": "SHARE_LISTED_ITEM",
-    "launch": "LAUNCH",
-    "take_care": "TAKE_CARE",
+    SELL__BY_MARKETPLACE: "sell by marketplace",
+    SELL__BY_GROUP: "sell by group",
+    DISCUSSION__TO_GROUP: "discussion to group",
+    DISCUSSION__TO_NEW_FEED: "discussion to newfeed",
+    SHARE__BY_MOBILE: "share using mobile",
+    SHARE__BY_DESKTOP: "share using desktop",
+    LAUNCH: "launch",
+    TAKE_CARE__JOIN_GROUP: "join group",
 }

@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from typing import Optional, List, Union, Any, Dict
+from PyQt6.QtCore import QObject, pyqtSignal
 
 
 @dataclass
@@ -82,4 +83,27 @@ class Setting_Type:
 
 
 class Statuses:
-    worker_finished = "WORKER_FINISHED"
+
+
+    playwright__aborted = "PLAYWRIGHT__ABORTED"
+    playwright__targetClosed = "PLAYWRIGHT__TARGETCLOSED"
+    playwright__retry = "PLAYWRIGHT__RETRY"
+    # playwright__timeoutError = "PLAYWRIGHT__TIMEOUTERROR"
+
+    playwright_finished = "WORKER_FINISHED"
+
+    proxy__recall: str = "PROXY__RECALL"
+    proxy__denied: str = "PROXY__DENIED"
+
+@dataclass
+class PlaywrightSignal_Type:
+    status: str
+    message: str = ""
+
+class Playwright_Signals(QObject):
+    info = pyqtSignal(dict)
+    warning = pyqtSignal(dict)
+    error = pyqtSignal(dict)
+    failed = pyqtSignal(dict)
+    finished = pyqtSignal(dict)
+    retry = pyqtSignal(dict)

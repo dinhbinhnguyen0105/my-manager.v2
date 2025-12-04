@@ -1,16 +1,14 @@
 
 
 import os
-from typing import Optional, List, Union, Dict, Any, Tuple
-from dataclasses import asdict
+from typing import Optional, List, Union, Dict, Any
 
 from src.my_types import Profile_Type
 from src.services._base_service import BaseService
-from src.my_constants import SETTING_NAME_OPTIONS
-from utils.profile_handlers import create_profile_folder, remove_profile_folder
+from src.utils.profile_handlers import create_profile_folder, remove_profile_folder
 
 
-PROFILE_CONTAINER_DIR = SETTING_NAME_OPTIONS["profile_container_dir"]
+PROFILE_CONTAINER_DIR = "profile_container_dir"
 
 
 class Profile_Service(BaseService):
@@ -18,13 +16,20 @@ class Profile_Service(BaseService):
     Service layer for Profile, handling business logic and file system coordination (profile folders).
     """
 
+    def _dict_to_data_type(self, data: Dict[str, Any]) -> Profile_Type:
+        """Converts a database dictionary record into a Profile_Type dataclass."""
+        required_keys = [
+            field.name for field in Profile_Type.__dataclass_fields__.values()
+        ]
+        return Profile_Type(**{key: data.get(key) for key in required_keys})
+
     def create(self, profile_payload: Profile_Type) -> Union[Profile_Type, bool]:
         """
         Creates a new profile record and associated profile folder.
         """
         new_ua = self.init_ua()
-        profile_payload.mobile_ua = new_ua("mobile")
-        profile_payload.desktop_ua = new_ua("desktop")
+        profile_payload.mobile_ua = new_ua["mobile"]
+        profile_payload.desktop_ua = new_ua["desktop"]
         new_profile = self.repo_manager.profile_repo.insert(profile_payload)
         if not new_profile:
             self.logger.error("Failed to insert profile into repository.")
@@ -55,6 +60,14 @@ class Profile_Service(BaseService):
             self.logger.info(f"Profile updated successfully: {profile_payload.id}")
             return True
         self.logger.error(f"Failed to update profile: {profile_payload.id}")
+        return False
+    
+    def change_status(self, id: str, status: str):
+        is_updated = self.repo_manager.profile_repo.change_status(id, status)
+        if is_updated:
+            self.logger.info(f"Profile updated successfully: {id}")
+            return True
+        self.logger.error(f"Failed to update profile: {id}")
         return False
 
     def delete(self, profile_id: str) -> bool:
@@ -165,16 +178,16 @@ class Profile_Service(BaseService):
         """
         return self.repo_manager.profile_repo.get_all_for_export()
     
-    def create_bulk(self, profile_list: List[Profile_Type]) -> bool:
+    def create_bulk(self, payload: List[Profile_Type]) -> bool:
         """
         Inserts multiple Profile_Type records in a single database transaction.
         """
-        if not profile_list:
+        if not payload:
             return True
         
-        success = self.repo_manager.profile_repo.insert_bulk_profiles(profile_list)
+        success = self.repo_manager.profile_repo.insert_bulk(payload)
         if success:
-            self.logger.info(f"Successfully inserted {len(profile_list)} profiles in bulk.")
+            self.logger.info(f"Successfully inserted {len(payload)} profiles in bulk.")
         else:
             self.logger.error(f"Failed to insert profiles in bulk. Transaction rolled back.")
         return success

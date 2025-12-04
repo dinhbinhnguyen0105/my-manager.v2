@@ -7,24 +7,30 @@ from PIL import Image
 
 # Giả định các import cần thiết từ các file bạn đã cung cấp
 from src.my_types import MiscProduct_Type
-from utils.image_handlers import (
+from src.utils.image_handlers import (
     copy_source_images,
     insert_logo_to_images,
     remove_images,
     get_images,
 )
 from src.services._base_service import BaseService
-from src.my_constants import SETTING_NAME_OPTIONS
 
 
-IMAGE_CONTAINER_DIR = SETTING_NAME_OPTIONS["image_container_dir"]
-LOGO_FILE = SETTING_NAME_OPTIONS["logo_file"]
+IMAGE_CONTAINER_DIR = "image_container_dir"
+LOGO_FILE = "logo_file"
 
 
 class MiscProduct_Service(BaseService):
     """
     Service layer for MiscProduct, handling business logic and coordinating with the Repository.
     """
+
+    def _dict_to_data_type(self, data: Dict[str, Any]) -> MiscProduct_Type:
+        """Converts a database dictionary record into a MiscProduct_Type dataclass."""
+        required_keys = [
+            field.name for field in MiscProduct_Type.__dataclass_fields__.values()
+        ]
+        return MiscProduct_Type(**{key: data.get(key) for key in required_keys})
 
     def create(
         self, product_payload: MiscProduct_Type, image_paths: List[str]
@@ -69,6 +75,15 @@ class MiscProduct_Service(BaseService):
             return True
         self.logger.error(f"Failed to update misc product: {product_payload.id}")
         return False
+    
+    def change_status(self, id: str, status: str):
+        is_updated = self.repo_manager.misc_product_repo.change_status(id, status)
+        if is_updated:
+            self.logger.info(f"Misc product updated successfully: {id}")
+            return True
+        self.logger.error(f"Failed to update misc product: {id}")
+        return False
+
     def refresh(self, product_id: str) -> bool:
         """Refreshes the 'updated_at' timestamp for a misc product record."""
         is_refreshed = self.repo_manager.misc_product_repo.refresh_updated_at(
@@ -139,24 +154,38 @@ class MiscProduct_Service(BaseService):
 
         return results
 
+    def get_random(self, name, days) -> Optional[Dict[str, Any]]:
+        current_product = self.repo_manager.misc_product_repo.get_random_product_by_name_and_update_days(name, days)
+        if not current_product:
+            self.logger.warning(f"Không tìm thấy product phù hợp với name = {name}, days = {days}")
+            return None
+        image_container = self.repo_manager.setting_repo.get_setting_value_by_name(IMAGE_CONTAINER_DIR)
+        current_image_dir = os.path.join(image_container, str(current_product.id))
+        current_image_logo_dir = os.path.join(current_image_dir, f"{str(current_product.id)}_logo")
+        current_product_imgs = get_images(current_image_logo_dir)
+        return {
+            "info": current_product,
+            "image_paths": current_product_imgs
+        }
+
     def read_all_for_export(self) -> List[Dict[str, Any]]:
         """
         Retrieves all miscellaneous product records in dictionary format for export/display.
         """
         
         return self.repo_manager.misc_product_repo.get_all_for_export()
-    
-    def create_bulk(self, product_list: List[MiscProduct_Type]) -> bool:
+
+    def create_bulk(self, payload: List[MiscProduct_Type]) -> bool:
         """
         Inserts multiple MiscProduct_Type records in a single database transaction.
         Image handling for bulk inserts is typically deferred or handled externally.
         """
-        if not product_list:
+        if not payload:
             return True
         
-        success = self.repo_manager.misc_product_repo.insert_bulk_products(product_list)
+        success = self.repo_manager.misc_product_repo.insert_bulk(payload)
         if success:
-            self.logger.info(f"Successfully inserted {len(product_list)} misc products in bulk.")
+            self.logger.info(f"Successfully inserted {len(payload)} misc products in bulk.")
         else:
             self.logger.error(f"Failed to insert misc products in bulk. Transaction rolled back.")
         return success

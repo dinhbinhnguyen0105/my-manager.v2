@@ -1,5 +1,5 @@
 # src/repositories/misc_product_repo.py
-
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional, List, Union, Tuple
 from dataclasses import asdict
 from src.my_constants import DB_TABLES
@@ -37,7 +37,7 @@ class MiscProduct_Repo(BaseRepository):
             :id, :status, :name, :description, :created_at, :updated_at
         )
         """
-        if self.insert(sql=sql, params=asdict(product_payload)):
+        if super().insert(sql=sql, params=asdict(product_payload)):
             return product_payload
         return False
 
@@ -58,6 +58,20 @@ class MiscProduct_Repo(BaseRepository):
         WHERE id = :id
         """
         params = asdict(product_payload)
+        return super().update(sql=sql, params=params)
+    
+    def change_status(self, id: str, status: str) -> bool:
+        sql = f"""
+        UPDATE {MISC_PRODUCT_TABLE} SET
+            status = :status,
+            updated_at = :updated_at
+        WHERE id = :id
+        """
+        params = {
+            "id": id,
+            "status": status, 
+            "updated_at": self.init_time(),
+        }
         return self.update(sql=sql, params=params)
 
     def refresh_updated_at(self, product_id: str) -> bool:
@@ -69,17 +83,40 @@ class MiscProduct_Repo(BaseRepository):
         WHERE id = :id
         """
         params = {"id": product_id, "updated_at": current_time}
-        return self.update(sql=sql, params=params)
+        return super().update(sql=sql, params=params)
     
     def delete_product_by_id(self, product_id: str) -> bool:
         """Deletes a misc product record by its primary key ID."""
         sql = f"DELETE FROM {MISC_PRODUCT_TABLE} WHERE id = :id"
-        return self.delete(sql=sql, params={"id": product_id})
+        return super().delete(sql=sql, params={"id": product_id})
 
     def get_product_by_id(self, product_id: str) -> Optional[MiscProduct_Type]:
         """Retrieves a single misc product record by its primary key ID."""
         sql = f"SELECT * FROM {MISC_PRODUCT_TABLE} WHERE id = :id"
-        result_dict = self.get_one(sql=sql, params={"id": product_id})
+        result_dict = super().get_one(sql=sql, params={"id": product_id})
+
+        if result_dict:
+            return self._dict_to_misc_product(result_dict)
+        return None
+
+    def get_random_product_by_name_and_update_days(
+        self, name: str, days: int
+    ) -> Optional[MiscProduct_Type]:
+        """
+        Retrieves a random MiscProduct_Type record whose name matches (name)
+        and whose 'updated_at' field is older than the specified number of days (days).
+        (updated_at < current time - days)
+        """
+        time_ago = (datetime.now() - timedelta(days=days)).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+        sql = f"""
+        SELECT * FROM {MISC_PRODUCT_TABLE}
+        WHERE name = :name AND updated_at < :time_ago
+        ORDER BY RANDOM() LIMIT 1
+        """
+        params = {"name": name, "time_ago": time_ago}
+        result_dict = super().get_one(sql=sql, params=params)
 
         if result_dict:
             return self._dict_to_misc_product(result_dict)
@@ -88,21 +125,21 @@ class MiscProduct_Repo(BaseRepository):
     def get_all_products(self) -> List[MiscProduct_Type]:
         """Retrieves all misc product records from the table."""
         sql = f"SELECT * FROM {MISC_PRODUCT_TABLE}"
-        results_list = self.get_all(sql=sql)
+        results_list = super().get_all(sql=sql)
 
         return [self._dict_to_misc_product(data) for data in results_list]
 
     def get_all_for_export(self) -> List[Dict[str, Any]]:
         sql = f"SELECT * FROM {MISC_PRODUCT_TABLE}"
-        return self.get_all(sql=sql)
+        return super().get_all(sql=sql)
 
-    def insert_bulk_products(self, product_list: List[MiscProduct_Type]) -> bool:
+    def insert_bulk(self, payload: List[Any]) -> bool:
         """Inserts multiple MiscProduct_Type records in a single transaction."""
-        if not product_list:
+        if not payload:
             return True
 
         params_list = []
-        for product in product_list:
+        for product in payload:
             product.id = self.init_id()
             product.created_at = self.init_time()
             product.updated_at = product.created_at
@@ -116,9 +153,11 @@ class MiscProduct_Repo(BaseRepository):
         )
         """
 
+        repo_super = super(MiscProduct_Repo, self)
+
         def execute_bulk_insert() -> Tuple[bool, Any]:
-            success = self.execute_many(sql=sql, params_list=params_list)
+            success = repo_super.execute_many(sql=sql, params_list=params_list)
             return success, None
 
-        success, _ = self.execute_in_transaction(execute_bulk_insert)
+        success, _ = repo_super.execute_in_transaction(execute_bulk_insert)
         return success

@@ -4,6 +4,7 @@ from src.utils.logger import Logger
 from src.services._service_manager import Service_Manager
 import os
 from typing import Tuple, Optional
+from src.utils.exception_handler import log_exception
 
 
 class BaseController:
@@ -21,7 +22,7 @@ class BaseController:
                 self.logger.error(error_msg)
                 return False, error_msg
 
-            data_to_export = service.get_all_for_export()
+            data_to_export = service.read_all_for_export()
 
             if not data_to_export:
                 warning_msg = f"Warning: No data available to export from {service_name}."
@@ -49,7 +50,7 @@ class BaseController:
 
         except Exception as e:
             error_msg = f"Unexpected error during export in Controller: {e}"
-            self.logger.error(error_msg)
+            log_exception(e)
             return False, error_msg
 
     def import_data(
@@ -74,13 +75,13 @@ class BaseController:
                 return False, error_msg
 
             raw_data = service.import_data(file_path=file_path, data_format=data_format)
-
             if not raw_data:
                 warning_msg = f"Import process returned no data from file: {file_path}. Check service logs for file read error."
                 self.logger.warning(warning_msg)
                 return False, warning_msg
-
-            success = service.insert_imported_data(raw_data)
+            
+            data = [service._dict_to_data_type(_) for _ in raw_data]
+            success = service.create_bulk(data)
 
             if success:
                 return True, None
@@ -91,5 +92,5 @@ class BaseController:
 
         except Exception as e:
             error_msg = f"Unexpected error during import in Controller: {e}"
-            self.logger.error(error_msg)
+            log_exception(e)
             return False, error_msg

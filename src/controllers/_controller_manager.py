@@ -7,6 +7,7 @@ from src.controllers.property_product_controller import PropertyProduct_Controll
 from src.controllers.misc_product_controller import MiscProduct_Controller
 from src.controllers.property_template_controller import PropertyTemplate_Controller
 from src.controllers.setting_controller import Setting_Controller
+from src.controllers.robot_controller import Robot_Controller
 
 
 class Controller_Manager:
@@ -18,5 +19,5 @@ class Controller_Manager:
         self.misc_product_controller = MiscProduct_Controller(service_manager)
         self.property_template_controller = PropertyTemplate_Controller(service_manager)
         self.setting_controller = Setting_Controller(service_manager)
-
+        self.robot_controller = Robot_Controller(service_manager)
         self.base_controller = BaseController(service_manager)
