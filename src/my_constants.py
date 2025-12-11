@@ -16,6 +16,7 @@ PROFILE__STATUS_OPTIONS = {
     "dead": "DEAD",
     "live": "LIVE",
 }
+
 PROPERTY_PRODUCT__STATUS_OPTIONS = {
     "selling": "đang bán",
     "sold": "đã bán",

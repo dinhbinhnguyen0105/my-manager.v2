@@ -1,18 +1,15 @@
 # src/views/profiles/profiles_page.py
 from typing import  Any, Dict, List, Tuple
-from PyQt6.QtWidgets import QWidget, QLineEdit, QComboBox, QMenu, QMessageBox
+from PyQt6.QtWidgets import QWidget, QLineEdit, QMenu
 from PyQt6.QtCore import (
     Qt,
     pyqtSlot,
     QPoint,
     QItemSelection,
-    QThread,
-    pyqtSignal,
     QItemSelectionModel,
 )
 from PyQt6.QtGui import QAction, QShortcut, QKeySequence
 
-from src.my_types import Profile_Type
 from src.controllers._controller_manager import Controller_Manager
 from src.models._model_manager import Model_Manager
 from src.views.utils.display_order_filter import (
@@ -29,6 +26,7 @@ PROFILE_LIVE = "live"
 PROFILE_DEAD = "dead"
 
 from src.ui.page_profiles_ui import Ui_PageProfiles
+
 class PageProfiles(QWidget, Ui_PageProfiles):
     def __init__(self, controller_manager: Controller_Manager, model_manager: Model_Manager, parent = None):
         super(PageProfiles, self).__init__(parent=None)
@@ -95,10 +93,8 @@ class PageProfiles(QWidget, Ui_PageProfiles):
             def make_handler(c_idx):
                 def _on_text_changed(text: str):
                     try:
-                        # set the proxy filter column and apply text
                         self.proxy_model.set_filter_column(c_idx)
                         self.proxy_model.filter_by_text(text)
-                        # ensure any selected-but-hidden rows are cleared
                         prune_hidden_selection(self.profiles_table)
                     except Exception:
                         pass

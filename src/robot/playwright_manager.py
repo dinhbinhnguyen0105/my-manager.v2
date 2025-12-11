@@ -1,5 +1,5 @@
 # src/robot/robot_manager.py
-import inspect
+import inspect, re
 from typing import Dict, Any, List
 from collections import deque
 from PyQt6.QtCore import QThreadPool, QObject, pyqtSlot, QTimer, pyqtSignal
@@ -80,7 +80,6 @@ class PlaywrightManager(QObject):
             worker_signals.failed.connect(self.__on_worker_failed)
             worker_signals.finished.connect(self.__on_worker_finished)
             worker_signals.retry.connect(self.__on_worker_retry)
-
 
             self.threadpool.start(worker)
     def is_all_task_finished(self) -> bool:
@@ -166,21 +165,27 @@ class PlaywrightManager(QObject):
         
         task_profile_payload: Dict[str, Any] = task.get("profile")
         profile_info: Profile_Type = task_profile_payload.get("info")
-        msg = ""
-        if message: msg = f"{status} - {message}"
-        else: msg = status
-        self.logger.debug(msg)
-
         self.__clear_worker_and_signals(profile_info.id)
         
         self._pending_proxies.append(raw_proxy)
         self._pending_pos.append(browser_position)
         self._pending_tasks.append(task)
-        DELAY_MS = 10000
 
-        self.logger.warning(f"Task for {profile_info.uid} recalled. Retrying in 10 seconds.")
-        
-        QTimer.singleShot(DELAY_MS, self.try_start_task)
+        msg = ""
+        if message: msg = f"{status} - {message}"
+        else: msg = status
+
+        delay_ms = 10000
+        if status == Statuses.proxy__recall:
+            _ =  re.search(r'(\d+)s', message) #r'(\d+)s'
+            second = int(_.group(1)) if int(_.group(1)) < 60 and int(_.group(1)) > 0 else 10
+            delay_ms = int(second*1000)
+        else:
+            self.logger.debug(msg)
+        warning_msg = f"Task for {profile_info.uid} recalled. Retrying in {float(delay_ms/ 1000)} seconds."
+        self.logger.warning(warning_msg)
+              
+        QTimer.singleShot(delay_ms, self.try_start_task)
 
     def __clear_worker_and_signals(self, key: str):
         if key in self._in_progress_tasks:

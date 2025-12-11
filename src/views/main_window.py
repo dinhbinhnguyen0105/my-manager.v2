@@ -6,6 +6,8 @@ from src.controllers._controller_manager import Controller_Manager
 from src.models._model_manager import Model_Manager
 from src.views.profiles.profiles_page import PageProfiles
 from src.views.settings.settings_page import PageSettings
+from src.views.properties.properties_page import PageProperties
+
 from src.ui.mainwindow_ui import Ui_MainWindow
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -18,6 +20,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.profiles_page = PageProfiles(controller_manager, model_manager)
         self.settings_page = PageSettings(controller_manager, model_manager)
+        self.properties_page = PageProperties(controller_manager, model_manager)
         self.setup_UI()
         self.setup_events()
 
@@ -29,15 +32,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.robot.setToolTip("Robot")
         self.template.setToolTip("Templates")
         self.setting.setToolTip("Settings")
-        # self.content_container.addWidget(self.real_estate_product_page)
+        self.content_container.addWidget(self.properties_page)
         self.content_container.addWidget(self.settings_page)
         # _handle_list_more_place
         # self.content_container.addWidget(self.templates_page)
         # self.content_container.addWidget(self.misc_page)
         self.content_container.addWidget(self.profiles_page)
         # self.content_container.addWidget(self.facebook_robot_page)
-        self.content_container.setCurrentWidget(self.profiles_page)
+        self.content_container.setCurrentWidget(self.properties_page)
     def setup_events(self):
         self.setting.toggled.connect(lambda : self.content_container.setCurrentWidget(self.settings_page))
         self.profile.toggled.connect(lambda : self.content_container.setCurrentWidget(self.profiles_page))
+        self.real_estate.toggled.connect(lambda : self.content_container.setCurrentWidget(self.properties_page))
         # self.real_estate.toggled.connect(self.content_container.setCurrentWidget())

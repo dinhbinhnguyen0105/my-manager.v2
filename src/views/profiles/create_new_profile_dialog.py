@@ -3,7 +3,6 @@ import datetime
 from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtCore import Qt, pyqtSignal
 
-from src.my_types import Profile_Type
 from src.utils.password_handler import create_strong_password
 
 from src.ui.dialog_profile_ui import Ui_Dialog_Profile

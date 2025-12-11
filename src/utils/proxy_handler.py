@@ -43,7 +43,63 @@ def get_proxy(proxy_api: str) -> Optional[Dict[str, str]]:
             }    
     except Exception as e:
         return False, str(e)
+    
+# import io, pycurl, json
+# from urllib.parse import urlparse
+# from typing import Dict, Any
 
-if __name__ == "__main__":
-    proxy = get_proxy("https://api.proxyxoay.org//api/key_xoay.php?key=yT4gWhXmz3loXWDAMSGc")
-    print(proxy)
+
+# def get_proxy(raw_proxy: str) -> Dict[str, Any]:
+#     raw_proxy = raw_proxy.strip()
+
+#     parsed_url = urlparse(raw_proxy)
+#     domain = parsed_url.netloc
+#     if not domain:
+#         raise Exception("Invalid proxy")
+#         return {
+#             "proxyhttp": proxyhttp, "proxysocks5": proxysocks5, "current_ip" : current_ip, "status": status, "message": res
+#         }
+#     try:
+#         buffer = io.BytesIO()
+#         curl = pycurl.Curl()
+#         curl.setopt(pycurl.URL, raw_proxy.strip())
+#         curl.setopt(pycurl.CONNECTTIMEOUT, 60)
+#         curl.setopt(pycurl.TIMEOUT, 60)
+#         headers = [
+#             "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+#             "Accept: application/json, text/plain, */*",
+#             "Accept-Language: en-US,en;q=0.9",
+#             "Connection: keep-alive",
+#         ]
+#         curl.setopt(pycurl.HTTPHEADER, headers)
+#         curl.setopt(pycurl.WRITEFUNCTION, buffer.write)
+#         curl.setopt(pycurl.FOLLOWLOCATION, 1)
+#         curl.setopt(pycurl.MAXREDIRS, 5)
+#         curl.perform()
+
+#         code = curl.getinfo(pycurl.RESPONSE_CODE)
+#         if code != 200:
+#             _msg = "Error fetching proxy"
+#             return {
+#                 "status": code,
+#                 "message": _msg
+#             }
+#         body = buffer.getvalue().decode("utf-8")
+#         res = json.loads(body)
+        
+
+#         proxyhttp = res.get("proxyhttp", None)
+#         proxysocks5 = res.get("proxysocks5", None)
+#         current_ip = res.get("ip", None)
+#         status = res.get("status", 400)
+#         return {
+#             "proxyhttp": proxyhttp, "proxysocks5": proxysocks5, "current_ip" : current_ip, "status": status, "message": str(res)
+#         }
+#     except Exception as e:
+#         print(e)
+#         return res
+
+
+# if __name__ == "__main__":
+#     proxy = get_proxy("https://api.proxyxoay.org//api/key_xoay.php?key=yT4gWhXmz3loXWDAMSGc")
+#     print(proxy)

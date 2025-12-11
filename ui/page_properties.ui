@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PageREProduct</class>
- <widget class="QWidget" name="PageREProduct">
+ <class>PageProperties</class>
+ <widget class="QWidget" name="PageProperties">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
+    <width>1234</width>
     <height>600</height>
    </rect>
   </property>
   <property name="font">
    <font>
     <family>Courier New</family>
+    <pointsize>12</pointsize>
    </font>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#REProduct{
+   <string notr="true">#PageProperties{
   font-family: &quot;Courier New&quot;;
   background-color: #FFFFFF;
+	font-size: 13px;
 }
 QGroupBox {
   font-family: &quot;Courier New&quot;;
@@ -79,9 +81,9 @@ QPushButton {
     <number>8</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="PageREProduct_layout">
+    <layout class="QHBoxLayout" name="PageProperties_layout">
      <item>
-      <widget class="QWidget" name="contents_container_w" native="true">
+      <widget class="QWidget" name="contents_container" native="true">
        <layout class="QVBoxLayout" name="verticalLayout_28">
         <property name="spacing">
          <number>0</number>
@@ -99,7 +101,7 @@ QPushButton {
          <number>0</number>
         </property>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_27">
+         <layout class="QVBoxLayout" name="contents_container_layout">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -146,7 +148,7 @@ QPushButton {
               <number>0</number>
              </property>
              <item row="0" column="0">
-              <layout class="QGridLayout" name="gridLayout">
+              <layout class="QGridLayout" name="search_container_layout">
                <property name="leftMargin">
                 <number>0</number>
                </property>
@@ -166,7 +168,7 @@ QPushButton {
                 <number>0</number>
                </property>
                <item row="0" column="1">
-                <widget class="QWidget" name="wards_container_w" native="true">
+                <widget class="QWidget" name="wards_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_15">
                   <property name="spacing">
                    <number>0</number>
@@ -184,7 +186,7 @@ QPushButton {
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_16">
+                   <layout class="QVBoxLayout" name="wards_container_layout">
                     <item>
                      <widget class="QLabel" name="wards_label">
                       <property name="font">
@@ -216,7 +218,7 @@ QPushButton {
                 </widget>
                </item>
                <item row="1" column="2">
-                <widget class="QWidget" name="street_container_w" native="true">
+                <widget class="QWidget" name="street_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_3">
                   <property name="spacing">
                    <number>0</number>
@@ -234,7 +236,7 @@ QPushButton {
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_4">
+                   <layout class="QVBoxLayout" name="street_container_layout">
                     <item>
                      <widget class="QLabel" name="street_label">
                       <property name="font">
@@ -265,7 +267,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="1" column="7">
-                <widget class="QWidget" name="area_container_w" native="true">
+                <widget class="QWidget" name="area_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_5">
                   <property name="spacing">
                    <number>0</number>
@@ -283,7 +285,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_6">
+                   <layout class="QVBoxLayout" name="area_container_layout">
                     <item>
                      <widget class="QLabel" name="area_label">
                       <property name="font">
@@ -314,7 +316,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="0" column="7">
-                <widget class="QWidget" name="legal_s_container_w" native="true">
+                <widget class="QWidget" name="legal_s_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_23">
                   <property name="spacing">
                    <number>0</number>
@@ -332,7 +334,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_24">
+                   <layout class="QVBoxLayout" name="legal_s_container_layout">
                     <item>
                      <widget class="QLabel" name="legal_s_label">
                       <property name="font">
@@ -364,7 +366,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="1" column="5">
-                <widget class="QWidget" name="function_cotnainer_w" native="true">
+                <widget class="QWidget" name="function_cotnainer" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_9">
                   <property name="spacing">
                    <number>0</number>
@@ -382,7 +384,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_10">
+                   <layout class="QVBoxLayout" name="function_cotnainer_layout">
                     <item>
                      <widget class="QLabel" name="function_label">
                       <property name="font">
@@ -413,7 +415,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="0" column="2">
-                <widget class="QWidget" name="transaction_container_w" native="true">
+                <widget class="QWidget" name="transaction_container" native="true">
                  <property name="styleSheet">
                   <string notr="true">padding</string>
                  </property>
@@ -434,7 +436,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_14">
+                   <layout class="QVBoxLayout" name="transaction_container_layout">
                     <item>
                      <widget class="QLabel" name="transaction_label">
                       <property name="font">
@@ -466,7 +468,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="1" column="6">
-                <widget class="QWidget" name="structure_container_w" native="true">
+                <widget class="QWidget" name="structure_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_7">
                   <property name="spacing">
                    <number>0</number>
@@ -484,7 +486,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_8">
+                   <layout class="QVBoxLayout" name="structure_container_layout">
                     <item>
                      <widget class="QLabel" name="structure_label">
                       <property name="font">
@@ -515,7 +517,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="0" column="4">
-                <widget class="QWidget" name="categories_container_w" native="true">
+                <widget class="QWidget" name="categories_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_25">
                   <property name="spacing">
                    <number>0</number>
@@ -533,7 +535,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_26">
+                   <layout class="QVBoxLayout" name="categories_container_layout">
                     <item>
                      <widget class="QLabel" name="categories_label">
                       <property name="font">
@@ -565,7 +567,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QWidget" name="pid_container_w" native="true">
+                <widget class="QWidget" name="pid_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_2">
                   <property name="spacing">
                    <number>0</number>
@@ -583,7 +585,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout">
+                   <layout class="QVBoxLayout" name="pid_container_layout">
                     <item>
                      <widget class="QLabel" name="pid_label">
                       <property name="font">
@@ -614,7 +616,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="0" column="5">
-                <widget class="QWidget" name="building_line_s_container_w" native="true">
+                <widget class="QWidget" name="building_line_s_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_21">
                   <property name="spacing">
                    <number>0</number>
@@ -632,7 +634,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_22">
+                   <layout class="QVBoxLayout" name="building_line_s_container_layotu">
                     <item>
                      <widget class="QLabel" name="building_line_s_label">
                       <property name="font">
@@ -664,7 +666,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="0" column="6">
-                <widget class="QWidget" name="furniture_s_container_w" native="true">
+                <widget class="QWidget" name="furniture_s_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_19">
                   <property name="spacing">
                    <number>0</number>
@@ -682,7 +684,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_20">
+                   <layout class="QVBoxLayout" name="furniture_s_container_layout">
                     <item>
                      <widget class="QLabel" name="furniture_s_lable">
                       <property name="font">
@@ -714,7 +716,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="1" column="4">
-                <widget class="QWidget" name="price_container_w" native="true">
+                <widget class="QWidget" name="price_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_11">
                   <property name="spacing">
                    <number>0</number>
@@ -732,7 +734,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_12">
+                   <layout class="QVBoxLayout" name="price_container_layout">
                     <item>
                      <widget class="QLabel" name="price_label">
                       <property name="font">
@@ -763,7 +765,7 @@ padding-left: 4px;</string>
                 </widget>
                </item>
                <item row="0" column="0">
-                <widget class="QWidget" name="status_container_w" native="true">
+                <widget class="QWidget" name="status_container" native="true">
                  <layout class="QVBoxLayout" name="verticalLayout_29">
                   <property name="spacing">
                    <number>0</number>
@@ -781,7 +783,7 @@ padding-left: 4px;</string>
                    <number>0</number>
                   </property>
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_30">
+                   <layout class="QVBoxLayout" name="status_container_layout">
                     <item>
                      <widget class="QLabel" name="status_label">
                       <property name="font">
@@ -818,7 +820,13 @@ padding-left: 4px;</string>
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="actions_container_w">
+           <widget class="QGroupBox" name="actions_container">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>60</height>
+             </size>
+            </property>
             <property name="styleSheet">
              <string notr="true"/>
             </property>
@@ -842,7 +850,7 @@ padding-left: 4px;</string>
               <number>0</number>
              </property>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout">
+              <layout class="QHBoxLayout" name="actions_container_layout">
                <item>
                 <widget class="QPushButton" name="action_create_btn">
                  <property name="text">
@@ -866,9 +874,6 @@ padding-left: 4px;</string>
                </item>
                <item>
                 <spacer name="space">
-                 <property name="orientation">
-                  <enum>Qt::Orientation::Horizontal</enum>
-                 </property>
                  <property name="sizeHint" stdset="0">
                   <size>
                    <width>40</width>
@@ -883,7 +888,7 @@ padding-left: 4px;</string>
            </widget>
           </item>
           <item>
-           <widget class="QTableView" name="re_product_table"/>
+           <widget class="QTableView" name="properties_table"/>
           </item>
          </layout>
         </item>
@@ -896,12 +901,12 @@ padding-left: 4px;</string>
         <string notr="true">margin:0;</string>
        </property>
        <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
+        <enum>Qt::Vertical</enum>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QWidget" name="details_container_w" native="true">
+      <widget class="QWidget" name="details_container" native="true">
        <layout class="QVBoxLayout" name="verticalLayout_18">
         <property name="spacing">
          <number>0</number>
@@ -919,7 +924,7 @@ padding-left: 4px;</string>
          <number>0</number>
         </property>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_17">
+         <layout class="QVBoxLayout" name="details_container_layout">
           <item>
            <widget class="QLabel" name="image_label">
             <property name="minimumSize">
@@ -937,16 +942,13 @@ padding-left: 4px;</string>
             <property name="text">
              <string>Images</string>
             </property>
-            <property name="alignment">
-             <set>Qt::AlignmentFlag::AlignCenter</set>
-            </property>
            </widget>
           </item>
           <item>
            <widget class="QPlainTextEdit" name="detail_text"/>
           </item>
           <item>
-           <widget class="QGroupBox" name="detail_action_container_w">
+           <widget class="QGroupBox" name="detail_action_container">
             <property name="title">
              <string/>
             </property>
@@ -964,7 +966,7 @@ padding-left: 4px;</string>
               <number>4</number>
              </property>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <layout class="QHBoxLayout" name="detail_action_container_layout">
                <item>
                 <widget class="QPushButton" name="action_default_btn">
                  <property name="text">
@@ -1016,7 +1018,7 @@ padding-left: 4px;</string>
   <tabstop>action_create_btn</tabstop>
   <tabstop>action_import_btn</tabstop>
   <tabstop>action_export_btn</tabstop>
-  <tabstop>re_product_table</tabstop>
+  <tabstop>properties_table</tabstop>
   <tabstop>detail_text</tabstop>
   <tabstop>action_rewrite_by_ai_btn</tabstop>
  </tabstops>

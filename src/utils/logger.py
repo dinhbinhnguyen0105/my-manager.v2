@@ -74,8 +74,11 @@ class Logger:
                 # 1. Stream Handler (Console/Terminal)
                 stream_handler = logging.StreamHandler()
 
-                # Formatter updated: Removed %(task_id_formatted)s
-                formatter = ColorFormatter("%(levelname)s [%(name)s]: %(message)s")
+                # Cập nhật: Thêm %(asctime)s và tham số datefmt
+                formatter = ColorFormatter(
+                    fmt="[%(asctime)s] %(levelname)s [%(name)s]: %(message)s", 
+                    datefmt="%d-%m-%y:%Hh%M"
+                )
                 stream_handler.setFormatter(formatter)
                 logger.addHandler(stream_handler)
 

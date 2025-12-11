@@ -46,16 +46,25 @@ class PlaywrightWorker(QRunnable):
                     "status": status_code
                 })
         except MyException as e:
-            if e.status == Statuses.playwright__retry:
+            if e.status in [
+                Statuses.playwright__retry,
+                Statuses.proxy__recall,
+            ]:
                 self.signals.retry.emit({
                     "payload": self.data,
                     "status": e.status,
                     "message": e.message
                 })
-        # except Exception as e:
-        #     print(e)
-        #     self.logger.error(str(e))
-    
+            else:
+                raise e
+        except Exception as e:
+            if "net::ERR_PROXY_CONNECTION_FAILED" in str(e):
+                self.signals.retry.emit({
+                    "payload": self.data,
+                    "status": "net::ERR_PROXY_CONNECTION_FAILED",
+                })
+            else:
+                raise e
     def handle_playwright(self) -> Tuple[bool, str]:
         with sync_playwright() as p:
             header = self.__init_header()
