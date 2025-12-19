@@ -1,15 +1,14 @@
 # src/robot/facebook_action_worker.py
 from typing import Optional, Dict, Any, Tuple
+from urllib.parse import urlparse, parse_qs
 from playwright.sync_api import (
     sync_playwright
 )
 from undetected_playwright import Tarnished
-
-from undetected_playwright import Tarnished
 from PyQt6.QtCore import QRunnable
 
 from src.my_exceptions import MyException
-from src.my_constants import LAUNCH
+from src.my_constants import LAUNCH, GET_COOKIES
 from src.my_types import Playwright_Signals, Profile_Type, Statuses
 from src.utils.proxy_handler import get_proxy
 from src.utils.logger import Logger
@@ -63,8 +62,12 @@ class PlaywrightWorker(QRunnable):
                     "payload": self.data,
                     "status": "net::ERR_PROXY_CONNECTION_FAILED",
                 })
+            elif "BrowserType.launch_persistent_context" in str(e):
+                pass
             else:
+                print(e)
                 raise e
+    
     def handle_playwright(self) -> Tuple[bool, str]:
         with sync_playwright() as p:
             header = self.__init_header()
@@ -74,6 +77,11 @@ class PlaywrightWorker(QRunnable):
             Tarnished.apply_stealth(context)
             auto_page = context.new_page()
 
+            if self.action_name == GET_COOKIES:
+                status, cookies = ACTION_MAPING[self.action_name] (context, auto_page)
+                self.signals.cookies.emit(self.profile_info.uid, cookies)
+                return status, Statuses.playwright_finished
+            
             return ACTION_MAPING[self.action_name](
                 auto_page,
                 self.action_payload,
@@ -118,8 +126,21 @@ class PlaywrightWorker(QRunnable):
         return info_html
     
     def __init_proxy(self):
+        parsed_url = urlparse(self.raw_proxy)
+        query_params = parse_qs(parsed_url.query)
+        key_proxy = query_params.get("key", [None])[0]
         status, result = get_proxy(self.raw_proxy)
         if not status:
             raise MyException("GET_PROXY_ERROR", Statuses.proxy__recall, result)
-        return result
+        proxyhttp = result.get("proxyhttp")
+        proxysocks5 = result.get("proxysocks5")
+        current_ip = result.get("current_ip")
+        proxy_type = "http://"
+
+        server_ip, server_port, username, password = proxyhttp.split(":", 3)
+        proxy = {"server": f"{proxy_type}{server_ip}:{server_port}"}
+        if username and password:
+            proxy.update({"username": username, "password": password})
+        self.logger.info(f"Key '{key_proxy}' -> {proxy.get('server')} -> {current_ip}")
+        return proxy
         

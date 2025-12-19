@@ -8,11 +8,13 @@ from src.my_constants import (
     SHARE__BY_DESKTOP,
     LAUNCH,
     TAKE_CARE__JOIN_GROUP,
+    GET_COOKIES
 )
 
 from src.robot.facebooks.launch import launch
-
+from src.robot.facebooks.get_cookies import get_cookies
 
 ACTION_MAPING = {
-    LAUNCH : launch
+    LAUNCH : launch,
+    GET_COOKIES: get_cookies
 }

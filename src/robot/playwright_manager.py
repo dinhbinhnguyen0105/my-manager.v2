@@ -6,6 +6,7 @@ from PyQt6.QtCore import QThreadPool, QObject, pyqtSlot, QTimer, pyqtSignal
 from PyQt6.QtGui import QGuiApplication
 
 from src.utils.logger import Logger
+from src.utils.cookies_handlers import write_cookies
 from src.my_types import Playwright_Signals, PlaywrightSignal_Type, Profile_Type, Statuses
 from src.services._service_manager import Service_Manager
 from src.robot.playwright_worker import PlaywrightWorker
@@ -80,6 +81,7 @@ class PlaywrightManager(QObject):
             worker_signals.failed.connect(self.__on_worker_failed)
             worker_signals.finished.connect(self.__on_worker_finished)
             worker_signals.retry.connect(self.__on_worker_retry)
+            worker_signals.cookies.connect(self.__on_worker_cookies)
 
             self.threadpool.start(worker)
     def is_all_task_finished(self) -> bool:
@@ -182,10 +184,16 @@ class PlaywrightManager(QObject):
             delay_ms = int(second*1000)
         else:
             self.logger.debug(msg)
-        warning_msg = f"Task for {profile_info.uid} recalled. Retrying in {float(delay_ms/ 1000)} seconds."
+        warning_msg = f"Task for {profile_info.username} ({profile_info.uid}) recalled. Retrying in {float(delay_ms/ 1000)} seconds."
         self.logger.warning(warning_msg)
               
         QTimer.singleShot(delay_ms, self.try_start_task)
+
+    @pyqtSlot(str, str)
+    def __on_worker_cookies(self, uid:str, cookies: str):
+        is_write = write_cookies(uid, cookies)
+        if is_write:self.logger.info(f"Successfully wrote cookies for {uid} to file.")
+        else: self.logger.waning(f"Failed wrote cookies for {uid} to file.")
 
     def __clear_worker_and_signals(self, key: str):
         if key in self._in_progress_tasks:

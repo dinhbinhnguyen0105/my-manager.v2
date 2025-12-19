@@ -1,9 +1,10 @@
 # src/views/profiles/profiles_page.py
 from typing import  Any, Dict, List, Tuple
-from PyQt6.QtWidgets import QWidget, QLineEdit, QMenu
+from PyQt6.QtWidgets import QWidget, QLineEdit, QMenu, QMessageBox
 from PyQt6.QtCore import (
     Qt,
     pyqtSlot,
+    pyqtSignal,
     QPoint,
     QItemSelection,
     QItemSelectionModel,
@@ -28,6 +29,7 @@ PROFILE_DEAD = "dead"
 from src.ui.page_profiles_ui import Ui_PageProfiles
 
 class PageProfiles(QWidget, Ui_PageProfiles):
+    status_msg = pyqtSignal(str)
     def __init__(self, controller_manager: Controller_Manager, model_manager: Model_Manager, parent = None):
         super(PageProfiles, self).__init__(parent=None)
         self.setupUi(self)
@@ -38,10 +40,12 @@ class PageProfiles(QWidget, Ui_PageProfiles):
         self.proxy_model = self.model_manager.profile()
         self.base_model = self.proxy_model.get_source_model()
         self.import_export_handler = ImportExportHandler(self.controller_manager.profile_controller, self.profiles_table)
+
         self.setup_table()
         self.setup_connections()
         self.setup_filters()
         self.setup_shortcuts()
+
     
     def setup_table(self):
         self.profiles_table.setModel(self.proxy_model)
@@ -50,7 +54,7 @@ class PageProfiles(QWidget, Ui_PageProfiles):
         if created_at_col_index != -1:
             self.base_model.sort(
                 created_at_col_index,
-                Qt.SortOrder.DescendingOrder,  # Sắp xếp giảm dần (mới nhất lên trên)
+                Qt.SortOrder.DescendingOrder,
             )
         self.display_table_columns()
         self.profiles_table.setSelectionBehavior(
@@ -188,7 +192,6 @@ class PageProfiles(QWidget, Ui_PageProfiles):
             id_value = self.base_model.data(id_index, Qt.ItemDataRole.DisplayRole)
             if id_value:
                 selected_ids.append(id_value)
-
         return selected_ids
     
     def get_selected_uid_and_id(self):
@@ -267,6 +270,14 @@ class PageProfiles(QWidget, Ui_PageProfiles):
                     QItemSelectionModel.SelectionFlag.Deselect
                     | QItemSelectionModel.SelectionFlag.Rows,
                 )
+        currently_selected_rows_indexes = self.profiles_table.selectionModel().selectedRows()
+        selected_row_keys = set()
+        for index in currently_selected_rows_indexes:
+            row_number = index.row()
+            selected_row_keys.add(row_number)
+
+        self.status_msg.emit(f"Selected: {len(selected_row_keys)}")
+        
     
     @pyqtSlot()
     def _on_launch_as_desktop(self):
@@ -331,8 +342,19 @@ class PageProfiles(QWidget, Ui_PageProfiles):
     def _on_delete(self):
         selected_ids = self.get_selected_ids()
         if not selected_ids: return
-        for selected_id in selected_ids:
-            self.controller_manager.profile_controller.delete(selected_id)
+        reply = QMessageBox.question(
+            self,
+            "Confirm Delete",
+            f"Are you sure you want to delete {len(selected_ids)} profiles?",
+            QMessageBox.StandardButton.Yes
+            | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
+        )
+        if reply == QMessageBox.StandardButton.No:
+            return
+        else:
+            for selected_id in selected_ids:
+                self.controller_manager.profile_controller.delete(selected_id)
         self.base_model.reload_db()
 
     @pyqtSlot()

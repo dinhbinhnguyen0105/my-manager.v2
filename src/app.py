@@ -4,7 +4,7 @@ from src.repositories._repo_manager import Repository_Manager
 from src.services._service_manager import Service_Manager
 from src.controllers._controller_manager import Controller_Manager
 
-from src.views.main_window import MainWindow
+from src.main_window import MainWindow
 
 class Application:
     def __init__(self):

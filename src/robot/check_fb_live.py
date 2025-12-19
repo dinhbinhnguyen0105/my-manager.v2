@@ -147,7 +147,8 @@ class CheckLive(QObject):
             self.threadpool.maxThreadCount() - self.threadpool.activeThreadCount()
         )
         while available > 0 and self._pending_tasks:
-            _id, uid = self._pending_tasks.popleft()
+            uid, _id = self._pending_tasks.popleft()
+            print(_id, uid)
             worker = CheckLiveWorker(
                 (_id, uid), (len(self._pending_tasks), self._total_tasks)
             )

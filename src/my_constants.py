@@ -1,5 +1,6 @@
 # src/my_constants.py
-DB_CONTAINER_DIR = "./bin/database.db"
+DB_PATH = "./bin/database.db"
+COOKIES_PATH = "./bin/cookies.json"
 DB_TABLES = {
     "profile": "PROFILE",
     "property_product": "PROPERTY_PRODUCT",
@@ -115,6 +116,10 @@ SHARE__BY_MOBILE = "share__by_mobile"
 SHARE__BY_DESKTOP = "share__by_desktop"
 LAUNCH = "launch"
 TAKE_CARE__JOIN_GROUP = "take_care__join_group"
+TAKE_CARE__ADD_FRIEND = "take_care__add_friend"
+TAKE_CARE__COMMENT_TO_GROUP = "take_care__comment_to_group"
+TAKE_CARE__COMMENT_TO_FRIEND_WALL = "take_care__comment_to_friend_wall"
+GET_COOKIES = "get_cookies"
 
 ROBOT_ACTION_OPTIONS = {
     SELL__BY_MARKETPLACE: "sell by marketplace",
@@ -125,4 +130,8 @@ ROBOT_ACTION_OPTIONS = {
     SHARE__BY_DESKTOP: "share using desktop",
     LAUNCH: "launch",
     TAKE_CARE__JOIN_GROUP: "join group",
+    TAKE_CARE__ADD_FRIEND: "add friend",
+    TAKE_CARE__COMMENT_TO_GROUP: "group comment & reaction",
+    TAKE_CARE__COMMENT_TO_FRIEND_WALL: "friend comment & reaction",
+    GET_COOKIES: "get cookies"
 }

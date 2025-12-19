@@ -107,3 +107,4 @@ class Playwright_Signals(QObject):
     failed = pyqtSignal(dict)
     finished = pyqtSignal(dict)
     retry = pyqtSignal(dict)
+    cookies = pyqtSignal(str, str)

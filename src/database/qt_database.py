@@ -2,12 +2,12 @@
 
 from PyQt6.QtSql import QSqlDatabase
 from src.utils.logger import Logger
-from src.my_constants import DB_CONTAINER_DIR
+from src.my_constants import DB_PATH
 
 class QtDatabase:
     _instance = None
     _db = None
-    db_path = DB_CONTAINER_DIR
+    db_path = DB_PATH
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(QtDatabase, cls).__new__(cls)
