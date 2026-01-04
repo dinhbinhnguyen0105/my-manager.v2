@@ -23,8 +23,8 @@ from src.views.profiles.create_new_profile_dialog import CreateNewProfileDialog
 from src.views.profiles.update_existed_profile_dialog import UpdateExistedProfileDialog
 from src.views.utils.import_export_handler import ImportExportHandler
 
-PROFILE_LIVE = "live"
-PROFILE_DEAD = "dead"
+PROFILE_LIVE = 1
+PROFILE_DEAD = 0
 
 from src.ui.page_profiles_ui import Ui_PageProfiles
 
@@ -159,6 +159,7 @@ class PageProfiles(QWidget, Ui_PageProfiles):
     def display_table_columns(self):
         columns_to_display = [
             "uid",
+            "status",
             "username",
             "password",
             "two_fa",
@@ -287,7 +288,7 @@ class PageProfiles(QWidget, Ui_PageProfiles):
         payload = []
         for profile in profiles:
             payload.append({"profile": profile, "action_payload": {"mobile_mode": False, "action_name": LAUNCH}})
-        self.controller_manager.robot_controller.handle_facebook_action(
+        self.controller_manager.robot_controller.handle_run_bot(
             payload,
             {},
         )
@@ -300,7 +301,7 @@ class PageProfiles(QWidget, Ui_PageProfiles):
         payload = []
         for profile in profiles:
             payload.append({"profile": profile, "action_payload": {"mobile_mode": True, "action_name": LAUNCH}})
-        self.controller_manager.robot_controller.handle_facebook_action(
+        self.controller_manager.robot_controller.handle_run_bot(
             payload,
             {}, # setting
         )

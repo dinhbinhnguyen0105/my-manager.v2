@@ -117,6 +117,12 @@ class Profile_Repo(BaseRepository):
         results_list = super().get_all(sql=sql)
 
         return [self._dict_to_profile(data) for data in results_list]
+    
+    def get_all_uid(self) -> List[str]:
+        sql = f"SELECT uid FROM {PROFILE_TABLE}"
+        results = super().get_all_uid(sql)
+        return results
+        
 
     def get_all_for_export(self) -> List[Dict[str, Any]]:
         """Retrieves all profile records as a list of dictionaries, suitable for export."""

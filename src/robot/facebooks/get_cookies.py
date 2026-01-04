@@ -2,7 +2,8 @@
 from typing import Dict, Any, Tuple
 from playwright.sync_api import Page, BrowserContext
 from playwright._impl._errors import (
-    TargetClosedError
+    TargetClosedError,
+    TimeoutError,
 )
 from src.my_types import Statuses
 from src.utils.logger import Logger
@@ -21,15 +22,20 @@ def get_cookies(context: BrowserContext, page: Page):
         
         return True, cookie_string
         
-
     except TargetClosedError as e:
         return False, Statuses.playwright__targetClosed
     except Exception as e:
         if "net::ERR_ABORTED" in str(e):
-            return True, Statuses.playwright__aborted
+            return False, Statuses.playwright__aborted
         elif "net::ERR_TIMED_OUT" in str(e):
             return False, Statuses.playwright__retry
         elif "Page.set_content" in str(e):
+            return False, Statuses.playwright__retry
+        elif "net::ERR_EMPTY_RESPONSE" in str(e):
+            return False, Statuses.playwright__retry
+        elif "net::ERR_PROXY_CONNECTION_FAILED" in str(e):
+            return False, Statuses.playwright__retry
+        elif "Page.goto" in str(e):
             return False, Statuses.playwright__retry
         else:
             logger.error(str(e))

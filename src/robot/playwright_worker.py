@@ -28,12 +28,12 @@ class PlaywrightWorker(QRunnable):
         self.raw_proxy = payload.get("raw_proxy")
         self.signals = signals
 
+
         task_profile_payload: Dict[str, Any] = self.task.get("profile")
         self.profile_info: Profile_Type = task_profile_payload.get("info")
         self.profile_path = task_profile_payload.get("profile_path")
-        self.action_payload: Dict = self.task.get("action_payload")
+        self.action_payload: Dict[str, Any] = self.task.get("action_payload")
         self.action_name = self.action_payload.get("action_name", LAUNCH)
-
     def run(self):
         try:
             result, status_code  = self.handle_playwright()
@@ -79,7 +79,8 @@ class PlaywrightWorker(QRunnable):
 
             if self.action_name == GET_COOKIES:
                 status, cookies = ACTION_MAPING[self.action_name] (context, auto_page)
-                self.signals.cookies.emit(self.profile_info.uid, cookies)
+                if status:
+                    self.signals.cookies.emit(self.profile_info.uid, cookies)
                 return status, Statuses.playwright_finished
             
             return ACTION_MAPING[self.action_name](

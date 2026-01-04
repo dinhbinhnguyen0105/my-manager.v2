@@ -14,6 +14,7 @@ def launch(page: Page, action_payload: Dict[str, Any]) -> Tuple[bool, str]:
         page.wait_for_event(event="close", timeout=0)
         return True, Statuses.playwright_finished
     except TargetClosedError as e:
+        return True, Statuses.playwright_finished
         return False, Statuses.playwright__targetClosed
     except Exception as e:
         if "net::ERR_ABORTED" in str(e):

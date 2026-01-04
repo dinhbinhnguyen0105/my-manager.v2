@@ -97,6 +97,16 @@ class BaseRepository:
         if query.next():
             return self._record_to_dict(query.record())
         return None
+    
+    def get_all_uid(self, sql: str, params: Optional[Dict[str, Any]] =None) -> List[str]:
+        query = QSqlQuery(self.db)
+        if not self._execute_query(query, sql, params):
+            return []
+
+        results = []
+        while query.next():
+            results.append(self._record_to_dict(query.record()))
+        return results
 
     def get_all(
         self, sql: str, params: Optional[Dict[str, Any]] = None

@@ -5,8 +5,8 @@ from PyQt6.QtCore import Qt, pyqtSignal
 
 from src.my_types import Profile_Type
 from src.my_constants import PROFILE__NAME_OPTIONS
-PROFILE_LIVE = "live"
-PROFILE_DEAD = "dead"
+PROFILE_LIVE = 1
+PROFILE_DEAD = 0
 from src.ui.dialog_profile_ui import Ui_Dialog_Profile
 
 class UpdateExistedProfileDialog(QDialog, Ui_Dialog_Profile):

@@ -89,11 +89,14 @@ class Statuses:
     playwright__targetClosed = "PLAYWRIGHT__TARGETCLOSED"
     playwright__retry = "PLAYWRIGHT__RETRY"
     # playwright__timeoutError = "PLAYWRIGHT__TIMEOUTERROR"
+    playwright__unknown = "PLAYWRIGHT__UNKNOWN"
+    playwright__redirected = "PLAYWRIGHT__REDIRECTED"
 
     playwright_finished = "WORKER_FINISHED"
 
     proxy__recall: str = "PROXY__RECALL"
     proxy__denied: str = "PROXY__DENIED"
+
 
 @dataclass
 class PlaywrightSignal_Type:

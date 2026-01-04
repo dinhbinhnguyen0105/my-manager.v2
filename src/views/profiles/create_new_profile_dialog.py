@@ -8,8 +8,8 @@ from src.utils.password_handler import create_strong_password
 from src.ui.dialog_profile_ui import Ui_Dialog_Profile
 
 from src.my_constants import PROFILE__NAME_OPTIONS
-PROFILE_LIVE = "live"
-PROFILE_DEAD = "dead"
+PROFILE_LIVE = 1
+PROFILE_DEAD = 0
 
 class CreateNewProfileDialog(QDialog, Ui_Dialog_Profile):
     profile_data_signal = pyqtSignal(dict)

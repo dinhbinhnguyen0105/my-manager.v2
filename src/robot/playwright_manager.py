@@ -8,6 +8,7 @@ from PyQt6.QtGui import QGuiApplication
 from src.utils.logger import Logger
 from src.utils.cookies_handlers import write_cookies
 from src.my_types import Playwright_Signals, PlaywrightSignal_Type, Profile_Type, Statuses
+from src.my_constants import TAKE_CARE__ADD_FRIEND
 from src.services._service_manager import Service_Manager
 from src.robot.playwright_worker import PlaywrightWorker
 
@@ -54,8 +55,11 @@ class PlaywrightManager(QObject):
         ):
             task = self._pending_tasks.popleft()
             task_profile_payload: Dict[str, Any] = task.get("profile")
+            task_aciton_payload: Dict[str, Any] = task.get("action_payload")
+            if task_aciton_payload.get("action_name") == TAKE_CARE__ADD_FRIEND:
+                task_aciton_payload["list_uid"] = self.service_manager.profile_service.get_all_uid()
             if not task_profile_payload:
-                self.logger.error("miss profile")
+                self.logger.error("missing profile")
                 return
             profile_info:Profile_Type = task_profile_payload.get("info")
             raw_proxy = self._pending_proxies.popleft()
@@ -84,6 +88,8 @@ class PlaywrightManager(QObject):
             worker_signals.cookies.connect(self.__on_worker_cookies)
 
             self.threadpool.start(worker)
+        self.logger.info(f"Pending ({len(self._pending_tasks)}) - processing ({len(self._in_progress_tasks)})")
+
     def is_all_task_finished(self) -> bool:
         if len(self._pending_tasks) or len(self._in_progress_tasks):
             return False
@@ -169,7 +175,6 @@ class PlaywrightManager(QObject):
         profile_info: Profile_Type = task_profile_payload.get("info")
         self.__clear_worker_and_signals(profile_info.id)
         
-        self._pending_proxies.append(raw_proxy)
         self._pending_pos.append(browser_position)
         self._pending_tasks.append(task)
 
@@ -186,8 +191,13 @@ class PlaywrightManager(QObject):
             self.logger.debug(msg)
         warning_msg = f"Task for {profile_info.username} ({profile_info.uid}) recalled. Retrying in {float(delay_ms/ 1000)} seconds."
         self.logger.warning(warning_msg)
+
+        def handle_delay():
+            self._pending_proxies.append(raw_proxy)
+            self.try_start_task()
               
-        QTimer.singleShot(delay_ms, self.try_start_task)
+
+        QTimer.singleShot(delay_ms, handle_delay)
 
     @pyqtSlot(str, str)
     def __on_worker_cookies(self, uid:str, cookies: str):

@@ -136,6 +136,10 @@ class Profile_Service(BaseService):
                 })
 
         return results
+    
+    def get_all_uid(self) -> List[str]:
+        uids = self.repo_manager.profile_repo.get_all_uid()
+        return [uid.get("uid") for uid in uids]
 
     def refresh_ua(self, list_of_profile_id: List[str]) -> bool:
         """

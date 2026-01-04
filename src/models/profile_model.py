@@ -7,8 +7,8 @@ from src.models._base_model import BaseModel, BaseProxyModel
 from src.my_constants import DB_TABLES
 
 PROFILE_TABLE = DB_TABLES["profile"]
-PROFILE_LIVE = "live"
-PROFILE_DEAD = "dead"
+PROFILE_LIVE = 1
+PROFILE_DEAD = 0
 
 class Profile_Model(BaseModel):
 	def __init__(self, db, parent=None):
@@ -25,7 +25,7 @@ class Profile_Model(BaseModel):
 				status_index = self.index(index.row(), status_col)
 				status_value = super().data(status_index, Qt.ItemDataRole.DisplayRole)
 				try:
-					if status_value == PROFILE_DEAD:
+					if int(status_value) == PROFILE_DEAD:
 						return QBrush(QColor("#e7625f"))
 				except (ValueError, TypeError):
 					pass

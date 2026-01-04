@@ -1,6 +1,6 @@
 # src/views/robot/robot_page.py
 from typing import List, Tuple, Dict, Any
-from PyQt6.QtWidgets import QWidget, QMenu, QFileDialog, QLineEdit, QMessageBox
+from PyQt6.QtWidgets import QWidget, QMenu, QFileDialog, QLineEdit, QMessageBox, QTreeWidgetItem
 from PyQt6.QtCore import (
     Qt,
     pyqtSlot,
@@ -11,7 +11,7 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import QAction, QShortcut, QKeySequence, QMouseEvent
 
-from src.my_constants import SETTING_NAME_OPTIONS
+from src.my_constants import SETTING_NAME_OPTIONS, ROBOT_ACTION_OPTIONS
 from src.my_types import Setting_Type
 from src.controllers._controller_manager import Controller_Manager
 from src.models._model_manager import Model_Manager
@@ -21,6 +21,7 @@ from src.views.utils.display_order_filter import (
 )
 from src.ui.page_robot_ui import Ui_PageFacebookRobot
 from src.views.robot.robot_action import RobotAction
+from src.views.robot.robot_run_dialog import RobotRun
 
 
 class PageRobot(QWidget, Ui_PageFacebookRobot):
@@ -38,11 +39,14 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
         self.base_model = self.proxy_model.get_source_model()
 
         self.dict_robot_tasks: Dict[str, Any] = {}
+        self.tasks = []
 
         self.setup_table()
         self.setup_connections()
         self.setup_filters()
         self.setup_shortcuts()
+
+        self.results_container.setHidden(True)
 
     def setup_table(self):
         self.profiles_table.setModel(self.proxy_model)
@@ -104,7 +108,8 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
                 elif hasattr(widget, "currentTextChanged"):
                     widget.currentTextChanged.connect(handler)
                 elif hasattr(widget, "activated"):
-                    widget.activated.connect(lambda idx, w=widget: handler(w.currentText()))
+                    widget.activated.connect(
+                        lambda idx, w=widget: handler(w.currentText()))
             except Exception:
                 pass
 
@@ -117,7 +122,8 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
                     except Exception:
                         pass
 
-                self.display_order_input.textChanged.connect(_on_display_order_changed)
+                self.display_order_input.textChanged.connect(
+                    _on_display_order_changed)
             except Exception:
                 pass
         try:
@@ -132,7 +138,23 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
         except Exception:
             pass
 
-    def setup_shortcuts(self): pass
+    def setup_shortcuts(self):
+        reload = QShortcut(QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_R), self)
+        create_new = QShortcut(QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_N), self)
+        delete_1 = QShortcut(
+            QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Backspace), self
+        )
+        delete_2 = QShortcut(QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Delete), self)
+        save = QShortcut(QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_S), self)
+        run = QShortcut(QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Return), self)
+        create_new.activated.connect(self._on_add_action_clicked)
+        reload.activated.connect(
+            lambda: (self.base_model.reload_db(), self._emit_current_stats())
+        )
+        delete_1.activated.connect(self._handle_delete_fb_action_widget)
+        delete_2.activated.connect(self._handle_delete_fb_action_widget)
+        save.activated.connect(self._on_save_action_clicked)
+        run.activated.connect(self._on_run_action_clicked)
 
     def get_selected_ids(self):
         selected_rows_indexes = (
@@ -200,11 +222,33 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
             else:
                 self.profiles_table.setColumnHidden(col, False)
 
+    def set_actions_tree_view(self, dict_robot_tasks: Dict[str, Any]):
+        self.actions_tree_view.clear()
+
+
+
+        for profile_id, action_info in dict_robot_tasks.items():
+            profile = action_info["profile"]
+            profile_info = profile["info"]
+            profile_path = profile["profile_path"]
+            actions = action_info["actions"]
+            if not actions:
+                continue
+            tree_account_item = QTreeWidgetItem(
+                [
+                    f"{profile_info.username} ({profile_info.uid})"
+                ]
+            )
+            for action in actions:
+                action_name = action["action_name"]
+                tree_action_item = QTreeWidgetItem([ROBOT_ACTION_OPTIONS[action_name].capitalize()])
+                tree_account_item.addChild(tree_action_item)
+            self.actions_tree_view.addTopLevelItem(tree_account_item)
+        self.actions_tree_view.expandAll()
 
 # -----------------
 # Slot
 # -----------------
-
 
     @pyqtSlot(QItemSelection, QItemSelection)
     def _on_selection_changed(
@@ -238,7 +282,7 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
     def _on_add_action_clicked(self):
         action_w = RobotAction(self)
         self.action_payload_layout.addWidget(action_w)
-    
+
     @pyqtSlot()
     def _handle_delete_fb_action_widget(self):
         count = self.action_payload_layout.count()
@@ -247,11 +291,12 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
             if isinstance(last_widget, RobotAction):
                 last_widget.setParent(None)
                 last_widget.deleteLater()
-    
+
     @pyqtSlot()
     def _on_save_action_clicked(self):
-        selected_account_ids = self.get_selected_ids()
-        if not selected_account_ids:
+        robot_tasks = {}
+        selected_profile_id = self.get_selected_ids()
+        if not selected_profile_id:
             return
 
         action_widgets: List[RobotAction] = (
@@ -260,7 +305,7 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
         actions: List[Dict[str, Any]] = []
         for idx, action_widget in enumerate(action_widgets):
             value = action_widget.get_value()
-            if value == None:
+            if value == None or not value.get("action_name"):
                 QMessageBox.warning(
                     self,
                     "Action Data is Empty",
@@ -271,42 +316,33 @@ class PageRobot(QWidget, Ui_PageFacebookRobot):
                 return
             else:
                 actions.append(value)
-        
 
-        # Ghi đè/Cập nhật self.dict_robot_tasks
-        for account_id in selected_account_ids:
+        for profile_id in selected_profile_id:
             if actions:
-                new_actions = []
-                account_data = (
-                    self.controller_manager.fb_account_controller.get_account_by_id(
-                        account_id
-                    )
-                )
-                profile_data = (
-                    self.controller_manager.profile_controller.get_profile_by_id(
-                        account_data.profile_id
-                    )
-                )
-                for action in actions:
-                    new_actions.append(
-                        self.controller_manager.robot_controller.init_action_payload(
-                            account_data=account_data, action=action
-                        )
-                    )
-                self.dict_robot_tasks[account_id] = {
-                    # "profile": ,
-                    # "action_payload": 
+                profile = self.controller_manager.profile_controller.read(
+                    profile_id)
+                robot_tasks[profile_id] = {
+                    "profile": profile,
+                    "actions": actions
                 }
             else:
-                if account_id in self.dict_robot_tasks:
-                    del self.dict_robot_tasks[account_id]
-
-        sorted_tasks = sorted(
-            self.dict_robot_tasks.items(),
-            key=lambda item: (item[1].account_data.username or ""),
-        )
-        self.dict_robot_tasks = dict(sorted_tasks)
-        self.set_actions_tree_view(self.dict_robot_tasks)
+                if profile_id in robot_tasks:
+                    del robot_tasks[profile_id]
+        
+        sorted_dict = dict(sorted(
+            robot_tasks.items(), 
+            key=lambda item: item[1]['profile']['info'].username
+        ))
+        self.tasks = self.controller_manager.robot_controller.init_robot_tasks(sorted_dict)
+        self.set_actions_tree_view(sorted_dict)
 
     @pyqtSlot()
-    def _on_run_action_clicked(self): pass
+    def _on_run_action_clicked(self): 
+        self.run_robot_dialog = RobotRun(self)
+        self.run_robot_dialog.show()
+        self.run_robot_dialog.setting_data_signal.connect(self._handle_run_robot)
+    
+    @pyqtSlot(dict)
+    def _handle_run_robot(self, settings: Dict[str, Any]):
+        self.controller_manager.robot_controller.handle_run_bot(self.tasks, settings)
+        pass
