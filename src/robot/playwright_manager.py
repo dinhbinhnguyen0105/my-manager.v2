@@ -134,9 +134,7 @@ class PlaywrightManager(QObject):
 
         task = payload.get("task")
         browser_position = payload.get("browser_position")
-        raw_proxy = payload.get("raw_proxy")
-
-        
+        raw_proxy = payload.get("raw_proxy") 
     @pyqtSlot(dict)
     def __on_worker_warning(self, res: dict): pass
     @pyqtSlot(dict)

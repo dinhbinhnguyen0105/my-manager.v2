@@ -52,7 +52,8 @@ def join_groups(page: Page, settings: Dict[str, Any]):
     if not is_redirected:
         return False, status
     groups = __get_groups(page)
-    __join_groups(page, groups, 3)
+    __join_groups(page, groups, 5)
+    page.wait_for_timeout(3_000)
     return True, Statuses.playwright_finished
 
 def __goto(page: Page, url: str = "https://www.facebook.com/search/groups/?q=bán nhà đà lạt"):
@@ -143,7 +144,7 @@ def __join_groups(page: Page, groups: List[Dict], num: int = 3):
             __close_dialog(page)
             join_btn = locator.locator(XpathSelectors.join_btn)
             join_btn.first.click()
-            page.wait_for_timeout(1_000)
+            page.wait_for_timeout(3_000)
         except Exception as e:
             print(e)
 
